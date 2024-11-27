@@ -1,0 +1,30 @@
+object ImageViewerFrame: TImageViewerFrame
+  Size.Width = 320.000000000000000000
+  Size.Height = 240.000000000000000000
+  Size.PlatformDefault = False
+  object lytClient: TLayout
+    Align = Client
+    Size.Width = 320.000000000000000000
+    Size.Height = 240.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 0
+    object ivImageViewer: TImageViewer
+      OnGesture = ivImageViewerGesture
+      Align = Client
+      Cursor = crDefault
+      Size.Width = 320.000000000000000000
+      Size.Height = 240.000000000000000000
+      Size.PlatformDefault = False
+      StyleLookup = 'scrollboxstyle'
+      TabOrder = 0
+      OnDblClick = ivImageViewerDblClick
+      OnMouseMove = ivImageViewerMouseMove
+      OnMouseWheel = ivImageViewerMouseWheel
+      DisableMouseWheel = True
+      MouseScaling = False
+      ShowScrollBars = False
+      Viewport.Width = 320.000000000000000000
+      Viewport.Height = 240.000000000000000000
+    end
+  end
+end

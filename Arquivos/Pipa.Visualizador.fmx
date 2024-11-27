@@ -1,0 +1,83 @@
+object Visualizador: TVisualizador
+  Size.Width = 320.000000000000000000
+  Size.Height = 382.000000000000000000
+  Size.PlatformDefault = False
+  object rtgTop: TRectangle
+    Align = Top
+    Fill.Color = xFFC1C1C1
+    Padding.Left = 10.000000000000000000
+    Padding.Right = 10.000000000000000000
+    Size.Width = 320.000000000000000000
+    Size.Height = 50.000000000000000000
+    Size.PlatformDefault = False
+    Stroke.Kind = None
+    object rtgFechar: TRectangle
+      Align = Right
+      Cursor = crHandPoint
+      Fill.Color = xFFC1C1C1
+      Position.X = 280.000000000000000000
+      Size.Width = 30.000000000000000000
+      Size.Height = 50.000000000000000000
+      Size.PlatformDefault = False
+      Stroke.Kind = None
+      OnClick = rtgFecharClick
+      object pthFechar: TPath
+        Align = Center
+        Data.Path = {
+          0400000000000000000040400B7B5440010000000000A8415C8FAA4100000000
+          000040405C8FAA41010000000000A8410B7B5440}
+        Fill.Kind = None
+        HitTest = False
+        Size.Width = 25.000000000000000000
+        Size.Height = 25.000000000000000000
+        Size.PlatformDefault = False
+        Stroke.Color = xFF717375
+      end
+    end
+    object rtgSalvar: TRectangle
+      Align = Left
+      Cursor = crHandPoint
+      Fill.Color = xFFC1C1C1
+      Position.X = 10.000000000000000000
+      Size.Width = 50.000000000000000000
+      Size.Height = 50.000000000000000000
+      Size.PlatformDefault = False
+      Stroke.Kind = None
+      OnClick = rtgSalvarClick
+      object pthSalvar: TPath
+        Align = Center
+        Data.Path = {
+          1B00000000000000000020430000504401000000000058440000504402000000
+          146B5C44000050440200000000006044EC945344020000000000604400005844
+          0200000000006044146B5C4402000000146B5C44000060440200000000005844
+          0000604401000000000020430000604402000000AF530E430000604402000000
+          00000043146B5C440200000000000043000058440200000000000043EC945344
+          02000000AF530E43000050440200000000002043000050440300000000002043
+          00005044000000000000084475931044010000006E124344DCF9AA4301000000
+          4D624E449A99C143010000006666FE430000304401000000000040439A99C143
+          010000007D3F6D43DCF9AA43010000000000F0430E2D1244010000000000F043
+          0000004301000000000008440000004301000000000008447493104403000000
+          0000084475931044}
+        Fill.Color = xFF717375
+        HitTest = False
+        Size.Width = 30.000000000000000000
+        Size.Height = 30.000000000000000000
+        Size.PlatformDefault = False
+        Stroke.Kind = None
+      end
+    end
+  end
+  object svDialog: TSaveDialog
+    Left = 192
+    Top = 262
+  end
+  object rtgFundo: TRectangle
+    Align = Client
+    Fill.Color = claBlack
+    Opacity = 0.800000011920929000
+    Size.Width = 320.000000000000000000
+    Size.Height = 332.000000000000000000
+    Size.PlatformDefault = False
+    Stroke.Kind = None
+  end
+end

@@ -1,0 +1,76 @@
+object ItemLista: TItemLista
+  Align = Left
+  Size.Width = 100.000000000000000000
+  Size.Height = 100.000000000000000000
+  Size.PlatformDefault = False
+  object rtgItem: TRectangle
+    Touch.GestureManager = GestureManager
+    Touch.InteractiveGestures = [LongTap]
+    OnGesture = rtgItemGesture
+    OnTap = rtgItemTap
+    Align = Client
+    Fill.Color = claNull
+    Padding.Left = 5.000000000000000000
+    Padding.Top = 5.000000000000000000
+    Padding.Right = 5.000000000000000000
+    Padding.Bottom = 5.000000000000000000
+    Size.Width = 100.000000000000000000
+    Size.Height = 100.000000000000000000
+    Size.PlatformDefault = False
+    Stroke.Kind = None
+    OnMouseDown = rtgItemMouseDown
+    OnMouseEnter = rtgItemMouseEnter
+    OnMouseLeave = rtgItemMouseLeave
+    object txtNome: TText
+      Align = Bottom
+      HitTest = False
+      Position.X = 5.000000000000000000
+      Position.Y = 76.000000000000000000
+      Size.Width = 90.000000000000000000
+      Size.Height = 19.000000000000000000
+      Size.PlatformDefault = False
+      TextSettings.Trimming = Character
+      TextSettings.WordWrap = False
+    end
+  end
+  object clSelecao: TCircle
+    Fill.Color = xFFB0B0B0
+    Opacity = 0.500000000000000000
+    Position.X = 71.000000000000000000
+    Size.Width = 28.000000000000000000
+    Size.Height = 33.000000000000000000
+    Size.PlatformDefault = False
+    Stroke.Kind = None
+    OnClick = clSelecaoClick
+    object pthSelecao: TPath
+      Align = Center
+      Data.Path = {
+        130000000000000000403741FF3FAD400200000000E0434101E0AE4002000000
+        009049410080CD400200000000A040410060DF400100000000D00041FF9F3141
+        020000000020F64000603741020000000080E34000603741020000000000D840
+        FF9F31410100000001C08B40FFCF0C410200000000006040FFDFFD4002000000
+        FF9F9940FE3FD440020000000060B540FEFFEF400100000000C0EC40FF6F1241
+        01000000FFCF2B41FEBFB54002000000FFCF2E41FC9FAF4002000000FFFF3241
+        FC9FAC4002000000FF3F3741FC3FAD400300000000403741FF3FAD4000000000
+        00403741FF3FAD40}
+      Fill.Color = claDodgerblue
+      HitTest = False
+      Size.Width = 20.000000000000000000
+      Size.Height = 15.000000000000000000
+      Size.PlatformDefault = False
+      Stroke.Kind = None
+    end
+  end
+  object tmrMiniatura: TTimer
+    Enabled = False
+    Interval = 250
+    OnTimer = tmrMiniaturaTimer
+    Left = 40
+    Top = 32
+  end
+  object GestureManager: TGestureManager
+    Sensitivity = 80.000000000000000000
+    Left = 24
+    Top = 8
+  end
+end

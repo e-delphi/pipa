@@ -1,0 +1,19 @@
+object Inicio: TInicio
+  Left = 0
+  Top = 0
+  Caption = 'Inicio'
+  ClientHeight = 528
+  ClientWidth = 320
+  Position = DesktopCenter
+  FormFactor.Width = 320
+  FormFactor.Height = 480
+  FormFactor.Devices = [Desktop]
+  OnCreate = FormCreate
+  OnKeyUp = FormKeyUp
+  DesignerMasterStyle = 0
+  object tmrInicio: TTimer
+    OnTimer = tmrInicioTimer
+    Left = 216
+    Top = 32
+  end
+end

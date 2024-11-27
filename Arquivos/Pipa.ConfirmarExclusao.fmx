@@ -1,0 +1,134 @@
+object ConfirmarExclusao: TConfirmarExclusao
+  Size.Width = 320.000000000000000000
+  Size.Height = 418.000000000000000000
+  Size.PlatformDefault = False
+  object rtgFundo: TRectangle
+    Align = Client
+    Fill.Color = xFFC9C9C9
+    Size.Width = 320.000000000000000000
+    Size.Height = 418.000000000000000000
+    Size.PlatformDefault = False
+    Stroke.Kind = None
+  end
+  object rtgModal: TRectangle
+    Align = Center
+    Fill.Color = claWhite
+    Size.Width = 291.000000000000000000
+    Size.Height = 125.000000000000000000
+    Size.PlatformDefault = False
+    Stroke.Kind = None
+    XRadius = 10.000000000000000000
+    YRadius = 10.000000000000000000
+    object rtgCancelar: TRectangle
+      Align = Right
+      Cursor = crHandPoint
+      Fill.Color = claNull
+      Margins.Left = 3.000000000000000000
+      Margins.Top = 3.000000000000000000
+      Margins.Right = 3.000000000000000000
+      Margins.Bottom = 3.000000000000000000
+      Position.X = 105.000000000000000000
+      Position.Y = 84.000000000000000000
+      Size.Width = 80.000000000000000000
+      Size.Height = 38.000000000000000000
+      Size.PlatformDefault = False
+      Stroke.Kind = None
+      XRadius = 10.000000000000000000
+      YRadius = 10.000000000000000000
+      OnClick = rtgCancelarClick
+      object txtCancelar: TText
+        Align = Center
+        HitTest = False
+        Size.Width = 60.000000000000000000
+        Size.Height = 20.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Cancelar'
+        TextSettings.Font.Size = 14.000000000000000000
+        TextSettings.FontColor = claDodgerblue
+      end
+      object canCancelar: TColorAnimation
+        AnimationType = InOut
+        Duration = 0.000000000000000000
+        Interpolation = Cubic
+        PropertyName = 'Fill.Color'
+        StartValue = claNull
+        StopValue = x0F1E90FF
+        Trigger = 'IsMouseOver=true'
+        TriggerInverse = 'IsMouseOver=false'
+      end
+    end
+    object rctUsuario: TRectangle
+      Align = Top
+      Fill.Color = claWhite
+      Margins.Left = 20.000000000000000000
+      Margins.Top = 10.000000000000000000
+      Margins.Right = 20.000000000000000000
+      Position.X = 20.000000000000000000
+      Position.Y = 53.000000000000000000
+      Size.Width = 251.000000000000000000
+      Size.Height = 28.000000000000000000
+      Size.PlatformDefault = False
+      Stroke.Thickness = 0.500000000000000000
+      XRadius = 5.000000000000000000
+      YRadius = 5.000000000000000000
+      object txtDescricao: TText
+        Align = Client
+        Size.Width = 251.000000000000000000
+        Size.Height = 28.000000000000000000
+        Size.PlatformDefault = False
+      end
+    end
+    object txtAcao: TText
+      Align = Top
+      Margins.Left = 20.000000000000000000
+      Margins.Top = 10.000000000000000000
+      Margins.Right = 20.000000000000000000
+      Position.X = 20.000000000000000000
+      Position.Y = 10.000000000000000000
+      Size.Width = 251.000000000000000000
+      Size.Height = 33.000000000000000000
+      Size.PlatformDefault = False
+      Text = 'Confirmar Exclus'#227'o'
+      TextSettings.Font.Size = 18.000000000000000000
+      TextSettings.HorzAlign = Leading
+    end
+    object rtgCriar: TRectangle
+      Align = Right
+      Cursor = crHandPoint
+      Fill.Color = claNull
+      Margins.Left = 3.000000000000000000
+      Margins.Top = 3.000000000000000000
+      Margins.Right = 20.000000000000000000
+      Margins.Bottom = 3.000000000000000000
+      Position.X = 191.000000000000000000
+      Position.Y = 84.000000000000000000
+      Size.Width = 80.000000000000000000
+      Size.Height = 38.000000000000000000
+      Size.PlatformDefault = False
+      Stroke.Kind = None
+      XRadius = 10.000000000000000000
+      YRadius = 10.000000000000000000
+      OnClick = rtgCriarClick
+      object txtCriar: TText
+        Align = Center
+        HitTest = False
+        Size.Width = 40.000000000000000000
+        Size.Height = 20.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Excluir'
+        TextSettings.Font.Size = 14.000000000000000000
+        TextSettings.FontColor = claRed
+      end
+      object canCriar: TColorAnimation
+        AnimationType = InOut
+        Duration = 0.000000000000000000
+        Interpolation = Cubic
+        PropertyName = 'Fill.Color'
+        StartValue = claNull
+        StopValue = x0FFF1E1E
+        Trigger = 'IsMouseOver=true'
+        TriggerInverse = 'IsMouseOver=false'
+      end
+    end
+  end
+end

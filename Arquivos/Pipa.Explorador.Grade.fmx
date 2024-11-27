@@ -1,0 +1,14 @@
+object ExploradorGrade: TExploradorGrade
+  Touch.InteractiveGestures = [LongTap]
+  Size.Width = 294.000000000000000000
+  Size.Height = 430.000000000000000000
+  Size.PlatformDefault = False
+  OnResized = FrameResized
+  object txtVazia: TText
+    Align = Top
+    Size.Width = 294.000000000000000000
+    Size.Height = 25.000000000000000000
+    Size.PlatformDefault = False
+    Text = 'Esta pasta est'#225' vazia.'
+  end
+end

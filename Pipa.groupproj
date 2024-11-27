@@ -1,0 +1,48 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{D82ACEBB-CF2B-491C-ADCC-DAFFC574D7A4}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="Arquivos\PipaArquivos.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Servidor\PipaServidor.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="PipaArquivos">
+        <MSBuild Projects="Arquivos\PipaArquivos.dproj"/>
+    </Target>
+    <Target Name="PipaArquivos:Clean">
+        <MSBuild Projects="Arquivos\PipaArquivos.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="PipaArquivos:Make">
+        <MSBuild Projects="Arquivos\PipaArquivos.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="PipaServidor">
+        <MSBuild Projects="Servidor\PipaServidor.dproj"/>
+    </Target>
+    <Target Name="PipaServidor:Clean">
+        <MSBuild Projects="Servidor\PipaServidor.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="PipaServidor:Make">
+        <MSBuild Projects="Servidor\PipaServidor.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="PipaArquivos;PipaServidor"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="PipaArquivos:Clean;PipaServidor:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="PipaArquivos:Make;PipaServidor:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>

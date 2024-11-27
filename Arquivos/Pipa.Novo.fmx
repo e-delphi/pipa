@@ -1,0 +1,168 @@
+object Novo: TNovo
+  Size.Width = 320.000000000000000000
+  Size.Height = 418.000000000000000000
+  Size.PlatformDefault = False
+  object rtgFundo: TRectangle
+    Align = Client
+    Fill.Color = xFFC9C9C9
+    Size.Width = 320.000000000000000000
+    Size.Height = 418.000000000000000000
+    Size.PlatformDefault = False
+    Stroke.Kind = None
+  end
+  object rtgModal: TRectangle
+    Align = Center
+    Fill.Color = claWhite
+    Size.Width = 235.000000000000000000
+    Size.Height = 131.000000000000000000
+    Size.PlatformDefault = False
+    Stroke.Kind = None
+    XRadius = 10.000000000000000000
+    YRadius = 10.000000000000000000
+    object lytAdicionarArquivo: TLayout
+      Align = Top
+      Cursor = crHandPoint
+      HitTest = True
+      Position.Y = 45.000000000000000000
+      Size.Width = 235.000000000000000000
+      Size.Height = 45.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 0
+      OnClick = lytAdicionarArquivoClick
+      object lytArquivo: TLayout
+        Align = Left
+        Size.Width = 50.000000000000000000
+        Size.Height = 45.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 0
+        object pthArquivo: TPath
+          Align = Center
+          Data.Path = {
+            19000000000000000000804100000040010000000000A8410000E04001000000
+            0000A8416210A84102000000E7FEA741AF72AC4102000000C270A441F8FFAF41
+            02000000650EA0410000B04101000000508D7F400000B041020000005D945C40
+            34F8AF4102000000684740407F6FAC4102000000000040406210A84101000000
+            00004040EE7C3F4002000000000040407F6A1C4002000000E17A5C4000000040
+            02000000508D7F40000000400100000000008041000000400300000000008041
+            0000004000000000000050410000404101000000000080410000404101000000
+            0000404100000041010000000000004100004041010000000000304100004041
+            0100000000003041000080410100000000005041000080410100000000005041
+            00004041030000000000504100004041}
+          Fill.Kind = None
+          HitTest = False
+          Size.Width = 24.000000000000000000
+          Size.Height = 30.000000000000000000
+          Size.PlatformDefault = False
+          Stroke.Color = xFF717375
+        end
+      end
+      object txtArquivo: TText
+        Align = Client
+        HitTest = False
+        Size.Width = 185.000000000000000000
+        Size.Height = 45.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Arquivo'
+        TextSettings.Font.Size = 15.000000000000000000
+        TextSettings.HorzAlign = Leading
+      end
+    end
+    object lytAdicionarPasta: TLayout
+      Align = Top
+      Cursor = crHandPoint
+      HitTest = True
+      Size.Width = 235.000000000000000000
+      Size.Height = 45.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 1
+      OnClick = lytAdicionarPastaClick
+      object lytPasta: TLayout
+        Align = Left
+        Size.Width = 50.000000000000000000
+        Size.Height = 45.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 0
+        object pthPasta: TPath
+          Align = Center
+          Data.Path = {
+            3900000000000000000040410000804101000000000040410000504100000000
+            0000404100005041010000000000404100002041000000000000404100005041
+            0100000000001041000050410000000000004041000050410100000000007041
+            0000504100000000000040400000C04001000000000040406666864102000000
+            000040405D5C8F410200000000004040A1D69341020000008CF34D40C4429741
+            0200000004395A406D459A410200000043CA6D4058B99C410200000007F08240
+            F2419E4102000000499D90400000A041020000001687A2400000A04102000000
+            164DC6400000A04101000000C06C8E410000A04102000000355E97410000A041
+            020000000AD79B410000A041020000005B429F41F2419E41020000000545A241
+            58B99C410200000058B9A441D6459A4102000000F241A6412D43974102000000
+            6900A8410AD79341020000006900A841F55B8F41020000006900A841FE658641
+            010000006900A8414D321341020000006900A84154460141020000006900A841
+            BAA0F04002000000F241A64107F0E2400200000058B9A44121E5D64002000000
+            6D45A241821CCD4002000000C4429F41C6F9C64002000000A1D69B410000C040
+            020000005D5C97410000C0400200000066668E410000C0400100000000004041
+            0000C04000000000000040400000C04001000000000040410000C04000000000
+            000040400000C04002000000000040405DA79C4002000000BA4E794000008040
+            020000000000A0400000804001000000D5CA0A410000804002000000849E1241
+            0000804002000000B18A1641000080400200000082391A41B1C4814002000000
+            617D1D4104568340020000003D9B2041A6ED85400200000003782341FC6F8940
+            0200000096B22641ED648D40020000000378294130F092400200000000002F41
+            00009E4001000000000040410000C040}
+          Fill.Kind = None
+          HitTest = False
+          Size.Width = 28.000000000000000000
+          Size.Height = 25.000000000000000000
+          Size.PlatformDefault = False
+          Stroke.Color = xFF717375
+        end
+      end
+      object txtPasta: TText
+        Align = Client
+        HitTest = False
+        Size.Width = 185.000000000000000000
+        Size.Height = 45.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Pasta'
+        TextSettings.Font.Size = 15.000000000000000000
+        TextSettings.HorzAlign = Leading
+      end
+    end
+    object rtgCancelar: TRectangle
+      Align = Right
+      Cursor = crHandPoint
+      Fill.Color = claNull
+      Margins.Left = 3.000000000000000000
+      Margins.Top = 3.000000000000000000
+      Margins.Right = 3.000000000000000000
+      Margins.Bottom = 3.000000000000000000
+      Position.X = 152.000000000000000000
+      Position.Y = 93.000000000000000000
+      Size.Width = 80.000000000000000000
+      Size.Height = 35.000000000000000000
+      Size.PlatformDefault = False
+      Stroke.Kind = None
+      XRadius = 10.000000000000000000
+      YRadius = 10.000000000000000000
+      OnClick = rtgCancelarClick
+      object txtCancelar: TText
+        Align = Center
+        HitTest = False
+        Size.Width = 60.000000000000000000
+        Size.Height = 20.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Cancelar'
+        TextSettings.Font.Size = 14.000000000000000000
+        TextSettings.FontColor = claDodgerblue
+      end
+      object canCancelar: TColorAnimation
+        AnimationType = InOut
+        Duration = 0.000000000000000000
+        Interpolation = Cubic
+        PropertyName = 'Fill.Color'
+        StartValue = claNull
+        StopValue = x0F1E90FF
+        Trigger = 'IsMouseOver=true'
+        TriggerInverse = 'IsMouseOver=false'
+      end
+    end
+  end
+end
