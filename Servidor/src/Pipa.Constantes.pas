@@ -6,10 +6,11 @@ interface
 const
   JWTKEY  = '';
   PORTA   = 500;
-  RAIZ    = 'D:\NextCloud\Imagens e Videos';
+  RAIZ    = 'D:\nextcloud';
   sl      = sLineBreak;
   IGNORAR: Array of String = ['.stfolder', '.aux', '.stfolder', '.stfolder (1)', '.stversions', 'thumbnails', '.stfolder', '.stfolder (1)', '.stversions', '@eaDir'];
-  SOMENTE_LEITURA = True;
+  PERMITE_INCLUSAO = True;
+  PERMITE_EXCLUSAO = False;
 
 implementation
 

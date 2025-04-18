@@ -7,20 +7,23 @@ uses
   Winapi.Windows,
   System.SysUtils,
   System.Classes,
+  System.JSON.Serializers,
   System.JSON,
   Horse,
   Pipa.Tipos;
 
-function NovoItem(const Path: String; const Tipo: TTipoItem; const SearchRec: TSearchRec): TItem;
-function ListarRecursivo(const Path: string): TArray<TItem>;
-function ListarNaoRecursivo(const Path: string): TArray<TItem>;
-function RemoverRaiz(const sRaiz: String; const Itens: TArray<TItem>): TArray<TItem>;
+//function NovoItem(const Path: String; const Tipo: TTipoItem; const SearchRec: TSearchRec): TItem;
+//function ListarRecursivo(const Path: string): TArray<TItem>;
+//function ListarNaoRecursivo(const Path: string): TArray<TItem>;
+//function RemoverRaiz(const sRaiz: String; const Itens: TArray<TItem>): TArray<TItem>;
+function IDArquivo(ID: Integer): String;
 function ItensParaJSON(Itens: TArray<TItem>): TJSONArray;
 function DumpBin(sFileName: String): Boolean;
 function ForceCombine(sEsquerda, sDireita: String): String;
 function ConcatenaQuery(Req: THorseRequest): String;
 function Icones: TArray<TIcon>;
-function Miniatura(sPasta, sNome, sExtensao: String): TStringStream;
+function Miniatura(ID: Integer): TStringStream;
+function Pasta(iID: Integer): TJSONArray;
 
 implementation
 
@@ -32,7 +35,6 @@ uses
   System.Math,
   System.DateUtils,
   System.IOUtils,
-  System.JSON.Serializers,
   System.NetEncoding,
   System.Hash,
   System.Math.Vectors,
@@ -50,69 +52,102 @@ uses
   CCR.Exif,
   Pipa.Fotos;
 
-function NovoItem(const Path: String; const Tipo: TTipoItem; const SearchRec: TSearchRec): TItem;
-begin
-  Result := Default(TItem);
-  Result.Tipo := Tipo;
-  Result.Pasta := Path.Split([TPath.DirectorySeparatorChar]);
-  Result.Nome := SearchRec.Name;
-  Result.Tamanho := SearchRec.Size;
-end;
+//function NovoItem(const Path: String; const Tipo: TTipoItem; const SearchRec: TSearchRec): TItem;
+//begin
+//  Result := Default(TItem);
+//  Result.Tipo := Tipo;
+//  Result.Pasta := Path.Split([TPath.DirectorySeparatorChar]);
+//  Result.Nome := SearchRec.Name;
+//  Result.Tamanho := SearchRec.Size;
+//end;
+//
+//function ListarRecursivo(const Path: string): TArray<TItem>;
+//var
+//  SearchRec: TSearchRec;
+//begin
+//  Result := [];
+//  if FindFirst(TPath.Combine(Path, '*', False), faAnyFile, SearchRec) = 0 then
+//  try
+//    repeat
+//      if (SearchRec.Name = '.') or (SearchRec.Name = '..') then
+//        Continue;
+//
+//      if (SearchRec.Attr and System.SysUtils.faDirectory <> 0) then
+//        Result := Result + [NovoItem(Path, TTipoItem.Pasta, SearchRec)] + ListarRecursivo(TPath.Combine(Path, SearchRec.Name, False))
+//      else
+//        Result := Result + [NovoItem(Path, TTipoItem.Arquivo, SearchRec)];
+//    until FindNext(SearchRec) <> 0;
+//  finally
+//    FindClose(SearchRec);
+//  end;
+//end;
+//
+//function ListarNaoRecursivo(const Path: string): TArray<TItem>;
+//var
+//  SearchRec: TSearchRec;
+//begin
+//  Result := [];
+//  if FindFirst(TPath.Combine(Path, '*', False), faAnyFile, SearchRec) = 0 then
+//  try
+//    repeat
+//      if (SearchRec.Name = '.') or (SearchRec.Name = '..') then
+//        Continue;
+//
+//      if MatchStr(SearchRec.Name, IGNORAR) then
+//        Continue;
+//
+//      if (SearchRec.Attr and System.SysUtils.faDirectory <> 0) then
+//        Result := Result + [NovoItem(Path, TTipoItem.Pasta, SearchRec)]
+//      else
+//        Result := Result + [NovoItem(Path, TTipoItem.Arquivo, SearchRec)];
+//    until FindNext(SearchRec) <> 0;
+//  finally
+//    FindClose(SearchRec);
+//  end;
+//end;
+//
+//function RemoverRaiz(const sRaiz: String; const Itens: TArray<TItem>): TArray<TItem>;
+//var
+//  I: Integer;
+//  iRaiz: Integer;
+//begin
+//  Result := Itens;
+//  iRaiz := Length(sRaiz.Split([TPath.DirectorySeparatorChar]));
+//  for I := Low(Result) to High(Result) do
+//    Result[I].Pasta := Copy(Result[I].Pasta, iRaiz);
+//end;
 
-function ListarRecursivo(const Path: string): TArray<TItem>;
+function IDArquivo(ID: Integer): String;
 var
-  SearchRec: TSearchRec;
+  Inst: IConnection;
 begin
-  Result := [];
-  if FindFirst(TPath.Combine(Path, '*', False), faAnyFile, SearchRec) = 0 then
-  try
-    repeat
-      if (SearchRec.Name = '.') or (SearchRec.Name = '..') then
-        Continue;
-
-      if (SearchRec.Attr and System.SysUtils.faDirectory <> 0) then
-        Result := Result + [NovoItem(Path, TTipoItem.Pasta, SearchRec)] + ListarRecursivo(TPath.Combine(Path, SearchRec.Name, False))
-      else
-        Result := Result + [NovoItem(Path, TTipoItem.Arquivo, SearchRec)];
-    until FindNext(SearchRec) <> 0;
-  finally
-    FindClose(SearchRec);
-  end;
-end;
-
-function ListarNaoRecursivo(const Path: string): TArray<TItem>;
-var
-  SearchRec: TSearchRec;
-begin
-  Result := [];
-  if FindFirst(TPath.Combine(Path, '*', False), faAnyFile, SearchRec) = 0 then
-  try
-    repeat
-      if (SearchRec.Name = '.') or (SearchRec.Name = '..') then
-        Continue;
-
-      if MatchStr(SearchRec.Name, IGNORAR) then
-        Continue;
-
-      if (SearchRec.Attr and System.SysUtils.faDirectory <> 0) then
-        Result := Result + [NovoItem(Path, TTipoItem.Pasta, SearchRec)]
-      else
-        Result := Result + [NovoItem(Path, TTipoItem.Arquivo, SearchRec)];
-    until FindNext(SearchRec) <> 0;
-  finally
-    FindClose(SearchRec);
-  end;
-end;
-
-function RemoverRaiz(const sRaiz: String; const Itens: TArray<TItem>): TArray<TItem>;
-var
-  I: Integer;
-  iRaiz: Integer;
-begin
-  Result := Itens;
-  iRaiz := Length(sRaiz.Split([TPath.DirectorySeparatorChar]));
-  for I := Low(Result) to High(Result) do
-    Result[I].Pasta := Copy(Result[I].Pasta, iRaiz);
+  Inst := TPool.Instance;
+  Inst.Query.Open(
+    sl +'with recursive pasta_cte as '+
+    sl +'( '+
+    sl +'    select id '+
+    sl +'         , pasta_id '+
+    sl +'         , nome '+
+    sl +'         , nome as caminho '+
+    sl +'      from pasta '+
+    sl +'     where pasta_id is null '+
+    sl +'     union all '+
+    sl +'    select p.id '+
+    sl +'         , p.pasta_id '+
+    sl +'         , p.nome '+
+    sl +'         , pc.caminho || ''\'' || p.nome as caminho '+
+    sl +'      from pasta p '+
+    sl +'      join pasta_cte pc '+
+    sl +'        on pc.id = p.pasta_id '+
+    sl +') '+
+    sl +'select iif(pc.caminho is null, '''', pc.caminho || ''\'') || a.nome || ''.'' || a.extensao as arquivo '+
+    sl +'  from arquivo as a '+
+    sl +'  left '+
+    sl +'  join pasta_cte as pc '+
+    sl +'    on pc.id = a.pasta_id '+
+    sl +' where a.id = '+ ID.ToString
+  );
+  Result := ForceCombine(RAIZ, Inst.Query.FieldByName('arquivo').AsString);
 end;
 
 function ItensParaJSON(Itens: TArray<TItem>): TJSONArray;
@@ -170,17 +205,107 @@ begin
   Result := ForceCombine(RAIZ, sPasta);
 end;
 
+function Pasta(iID: Integer): TJSONArray;
+var
+  Inst: IConnection;
+  oItem: TJSONObject;
+begin
+  Inst := TPool.Instance;
+  Inst.Query.Open(
+    sl +'with recursive pasta_cte as '+
+    sl +'( '+
+    sl +'    select id '+
+    sl +'         , pasta_id '+
+    sl +'         , nome '+
+    sl +'         , nome as caminho '+
+    sl +'      from pasta '+
+    sl +'     where pasta_id is null '+
+    sl +'     union all '+
+    sl +'    select p.id '+
+    sl +'         , p.pasta_id '+
+    sl +'         , p.nome '+
+    sl +'         , pc.caminho || ''\'' || p.nome as caminho '+
+    sl +'      from pasta p '+
+    sl +'      join pasta_cte pc '+
+    sl +'        on pc.id = p.pasta_id '+
+    sl +') '+
+    sl +'select p.id '+
+    sl +'     , 0 as tipo '+
+    sl +'     , p.pasta_id '+
+    sl +'     , case '+
+    sl +'       when cte.caminho = p.nome then ''\'' '+
+    sl +'       else substr(cte.caminho, length(cte.caminho) - length(p.nome) - 1) '+
+    sl +'        end as caminho '+
+    sl +'     , p.nome '+
+    sl +'     , null as extensao '+
+    sl +'     , null as tamanho '+
+    sl +'     , null as "criado::DATETIME" '+
+    sl +'     , null as "modificado::DATETIME" '+
+    sl +'  from pasta as p '+
+    sl +'  left '+
+    sl +'  join pasta_cte as cte '+
+    sl +'    on cte.id = p.id '+
+    sl +' where ifnull(p.pasta_id, 0) = '+ iID.ToString +
+    sl +' union '+
+    sl +'select a.id '+
+    sl +'     , 1 as tipo '+
+    sl +'     , a.pasta_id '+
+    sl +'     , ifnull(cte.caminho, ''\'') as caminho '+
+    sl +'     , a.nome '+
+    sl +'     , a.extensao '+
+    sl +'     , a.tamanho '+
+    sl +'     , a.criado as "criado::DATETIME" '+
+    sl +'     , a.modificado as "modificado::DATETIME" '+
+    sl +'  from arquivo as a '+
+    sl +'  left '+
+    sl +'  join pasta_cte as cte '+
+    sl +'    on cte.id = a.pasta_id '+
+    sl +' where ifnull(a.pasta_id, 0) = '+ iID.ToString +
+    sl +' order '+
+    sl +'    by tipo '+
+    sl +'     , criado desc '+
+    sl +'     , a.nome '
+  );
+
+  Result := TJSONArray.Create;
+  while not Inst.Query.Eof do
+  begin
+    oItem := TJSONObject.Create;
+    oItem.AddPair('id', Inst.Query.FieldByName('id').AsInteger);
+    oItem.AddPair('tipo', Inst.Query.FieldByName('tipo').AsInteger);
+    oItem.AddPair('pasta_id', Inst.Query.FieldByName('pasta_id').AsInteger);
+    oItem.AddPair('caminho', Inst.Query.FieldByName('caminho').AsString);
+    oItem.AddPair('nome', Inst.Query.FieldByName('nome').AsString);
+    oItem.AddPair('extensao', Inst.Query.FieldByName('extensao').AsString);
+    oItem.AddPair('tamanho', Inst.Query.FieldByName('tamanho').AsString);
+
+    if Inst.Query.FieldByName('criado').IsNull then
+      oItem.AddPair('criado', TJSONNull.Create)
+    else
+      oItem.AddPair('criado', DateToISO8601(Inst.Query.FieldByName('criado').AsDateTime));
+
+    if Inst.Query.FieldByName('modificado').IsNull then
+      oItem.AddPair('modificado', TJSONNull.Create)
+    else
+      oItem.AddPair('modificado', DateToISO8601(Inst.Query.FieldByName('modificado').AsDateTime));
+
+    Result.Add(oItem);
+
+    Inst.Query.Next;
+  end;
+end;
+
 var
   M: TMREWSync;
 
-function Miniatura(sPasta, sNome, sExtensao: String): TStringStream;
+function Miniatura(ID: Integer): TStringStream;
 var
   Inst: IConnection;
-  ss: TStringStream;
   Width: Single;
   Height: Single;
   sArquivo: String;
 begin
+  Result := nil;
   M.BeginWrite;
   try
     Inst := TPool.Instance;
@@ -205,6 +330,9 @@ begin
       sl +'select a.id as arquivo_id '+
       sl +'     , f.id as foto_id '+
       sl +'     , m.id as miniatura_id '+
+      sl +'     , iif(pc.caminho is null, '''', pc.caminho) as caminho '+
+      sl +'     , a.nome '+
+      sl +'     , a.extensao '+
       sl +'     , m.bytes '+
       sl +'  from arquivo as a '+
       sl +'  left '+
@@ -216,10 +344,9 @@ begin
       sl +'  left '+
       sl +'  join miniatura as m '+
       sl +'    on m.foto_id = f.id '+
-      sl +' where iif(pc.caminho is null, '''', pc.caminho) = '+ sPasta.QuotedString +
-      sl +'   and a.nome = '+ sNome.QuotedString +
-      sl +'   and lower(a.extensao) = '+ sExtensao.ToLower.QuotedString
+      sl +' where a.id = '+ ID.ToString
     );
+
     if not Inst.Query.IsEmpty and not Inst.Query.FieldByName('bytes').IsNull then
     begin
       Result := TStringStream.Create;
@@ -237,33 +364,30 @@ begin
       begin
         CoInitialize(nil);
         try
-          sArquivo := TPath.Combine(RAIZ, sPasta);
-          sArquivo := TPath.Combine(sArquivo, sNome) +'.'+ sExtensao;
+          sArquivo := TPath.Combine(RAIZ, Inst.Query.FieldByName('caminho').AsString);
+          sArquivo := TPath.Combine(sArquivo, Inst.Query.FieldByName('nome').AsString) +'.'+ Inst.Query.FieldByName('extensao').AsString;
 
-          ss := GerarPrevia(sArquivo);
-          try
-            TamanhoImagem(ss, Width, Height);
+          Result := GerarPrevia(sArquivo);
 
-            InsertBlobUsingFDCommand(
-              Inst.Connection,
-              sl +'insert '+
-              sl +'  into miniatura '+
-              sl +'     ( foto_id '+
-              sl +'     , largura '+
-              sl +'     , altura '+
-              sl +'     , bytes '+
-              sl +'     ) '+
-              sl +'values '+
-              sl +'     ( '+ Inst.Query.FieldByName('foto_id').AsString +
-              sl +'     , '+ FloatToJson(Width) +
-              sl +'     , '+ FloatToJson(Height) +
-              sl +'     , :bytes '+
-              sl +'     ); ',
-              ss
-            );
-          finally
-            FreeAndNil(ss);
-          end;
+          TamanhoImagem(Result, Width, Height);
+
+          InsertBlobUsingFDCommand(
+            Inst.Connection,
+            sl +'insert '+
+            sl +'  into miniatura '+
+            sl +'     ( foto_id '+
+            sl +'     , largura '+
+            sl +'     , altura '+
+            sl +'     , bytes '+
+            sl +'     ) '+
+            sl +'values '+
+            sl +'     ( '+ Inst.Query.FieldByName('foto_id').AsString +
+            sl +'     , '+ FloatToJson(Width) +
+            sl +'     , '+ FloatToJson(Height) +
+            sl +'     , :bytes '+
+            sl +'     ); ',
+            Result
+          );
         finally
           CoUninitialize;
         end;

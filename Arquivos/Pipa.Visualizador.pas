@@ -40,6 +40,21 @@ implementation
 
 uses
   System.StrUtils,
+  System.IOUtils,
+  {$IFDEF ANDROID}
+  Androidapi.JNI.GraphicsContentViewText,
+  Androidapi.JNI.provider,
+  Androidapi.JNI.JavaTypes,
+  Androidapi.JNI.Net,
+  Androidapi.JNI.App,
+  AndroidAPI.jNI.OS,
+  Androidapi.JNIBridge,
+  FMX.Helpers.Android,
+  IdUri,
+  Androidapi.Helpers,
+  FMX.Platform.Android,
+  System.Permissions,
+  {$ENDIF}
   Pipa.Visualizador.Imagem;
 
 {$R *.fmx}
@@ -82,7 +97,43 @@ begin
 end;
 
 procedure TVisualizador.rtgSalvarClick(Sender: TObject);
+{$IFDEF ANDROID}
+var
+  Intent: JIntent;
+{$ENDIF}
 begin
+  {$IFDEF ANDROID}
+  if not PermissionsService.IsPermissionGranted(JStringToString(TJManifest_permission.JavaClass.WRITE_EXTERNAL_STORAGE)) then
+  begin
+    PermissionsService.RequestPermissions(
+      [JStringToString(TJManifest_permission.JavaClass.WRITE_EXTERNAL_STORAGE)],
+      procedure(const APermissions: TClassicStringDynArray; const AGrantResults: TClassicPermissionStatusDynArray)
+      begin
+        if (Length(AGrantResults) = 1) and (AGrantResults[0] = TPermissionStatus.Granted) then
+          ShowMessage('Acesso concedido!')
+        else
+          ShowMessage('Acesso negado!')
+      end
+    );
+  end
+  else
+  begin
+    FStream.SaveToFile(TPath.Combine(TPath.GetSharedDownloadsPath, FNome));
+
+    Intent := TJIntent.JavaClass.init(TJIntent.JavaClass.ACTION_VIEW,
+      TJnet_Uri.JavaClass.parse(
+        TJImages_Media.JavaClass.insertImage(
+          TAndroidHelper.Activity.getContentResolver,
+          StringToJString(TPath.Combine(TPath.GetSharedDownloadsPath, FNome)),
+          StringToJString(FNome),
+          StringToJString('')
+        )
+      )
+    );
+    TAndroidHelper.Activity.startActivity(Intent);
+  end;
+  {$ENDIF}
+  {$IFDEF MSWINDOWS}
   svDialog.Filter := 'Original|'+ ExtractFileExt(FNome);
   svDialog.FileName := FNome;
 
@@ -90,6 +141,7 @@ begin
     Exit;
 
   FStream.SaveToFile(svDialog.FileName);
+  {$ENDIF}
 end;
 
 end.

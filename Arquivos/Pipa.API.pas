@@ -25,33 +25,31 @@ type
   public
     constructor Create;
     destructor Destroy; override;
-    function Listar(sPasta: String = ''): TItens;
+    function Listar(iID: Integer = 0): TItens;
     procedure NovaPasta(sPasta, sNome: String);
     procedure Enviar(sArquivoOrigem, sPastaDestino: String);
-    function Receber(sPasta, sArquivo: String): TStringStream;
-    procedure ExcluirArquivo(sPasta, sArquivo: String);
-    procedure ExcluirPasta(sPasta: String);
+    function Receber(ID: Integer): TStringStream;
+    procedure ExcluirArquivo(ID: Integer);
+    procedure ExcluirPasta(ID: Integer);
     // falta renomear arquivo e renomear pasta
     function Icone(Item: TItem): String;
     function Miniatura(Item: TItem): TBytes;
+    procedure Atualizar;
   end;
 
 implementation
 
 uses
   System.Threading,
-  Pipa.Ordenacao,
-  Pipa.Miniatura;
+  Pipa.Miniatura,
+  Pipa.Constantes;
  
-const
-  BASEURL = 'http://100.91.113.91:500/';
-
 { TPipa }
 
 constructor TPipa.Create;
 begin
   FAPI := TRESTAPI.Create;
-  FAPI.Host(BASEURL);
+  FAPI.Host(HOSTAPI);
   FIcons := TDictionary<String, String>.Create;
 end;
 
@@ -74,7 +72,7 @@ begin
   end;
 end;
 
-function TPipa.Listar(sPasta: String = ''): TItens;
+function TPipa.Listar(iID: Integer = 0): TItens;
 begin
   FAPI.Headers.Clear;
   FAPI.Query.Clear;
@@ -83,12 +81,7 @@ begin
 
   FAPI.Route('pasta');
 
-  if not sPasta.IsEmpty then
-    FAPI.Query(
-      TJSONObject.Create
-        .AddPair('separador', TPath.DirectorySeparatorChar)
-        .AddPair('pasta', sPasta)
-    );
+  FAPI.Query(TJSONObject.Create.AddPair('id', iID));
 
   FAPI.GET;
 
@@ -96,8 +89,6 @@ begin
     raise Exception.Create(FAPI.Response.ToString);
 
   Result := JSONParaItens(FAPI.Response.ToJSONArray);
-
-  Ordenar(Result);
 end;
 
 procedure TPipa.NovaPasta(sPasta, sNome: String);
@@ -166,7 +157,7 @@ begin
     raise Exception.Create(FAPI.Response.ToString);
 end;
 
-function TPipa.Receber(sPasta, sArquivo: String): TStringStream;
+function TPipa.Receber(ID: Integer): TStringStream;
 begin
   FAPI.Headers.Clear;
   FAPI.Query.Clear;
@@ -175,12 +166,7 @@ begin
 
   FAPI.Route('arquivo');
 
-  FAPI.Query(
-    TJSONObject.Create
-      .AddPair('separador', TPath.DirectorySeparatorChar)
-      .AddPair('pasta', sPasta)
-      .AddPair('nome', sArquivo)
-  );
+  FAPI.Query(TJSONObject.Create.AddPair('id', ID));
 
   FAPI.GET;
 
@@ -192,7 +178,7 @@ begin
   Result.Position := 0;
 end;
 
-procedure TPipa.ExcluirArquivo(sPasta, sArquivo: String);
+procedure TPipa.ExcluirArquivo(ID: Integer);
 begin
   FAPI.Headers.Clear;
   FAPI.Query.Clear;
@@ -201,12 +187,7 @@ begin
 
   FAPI.Route('arquivo');
 
-  FAPI.Query(
-    TJSONObject.Create
-      .AddPair('separador', TPath.DirectorySeparatorChar)
-      .AddPair('pasta', sPasta)
-      .AddPair('nome', sArquivo)
-  );
+  FAPI.Query(TJSONObject.Create.AddPair('id', ID));
 
   FAPI.DELETE;
 
@@ -214,7 +195,7 @@ begin
     raise Exception.Create(FAPI.Response.ToString);
 end;
 
-procedure TPipa.ExcluirPasta(sPasta: String);
+procedure TPipa.ExcluirPasta(ID: Integer);
 begin
   FAPI.Headers.Clear;
   FAPI.Query.Clear;
@@ -223,11 +204,7 @@ begin
 
   FAPI.Route('pasta');
 
-  FAPI.Query(
-    TJSONObject.Create
-      .AddPair('separador', TPath.DirectorySeparatorChar)
-      .AddPair('pasta', sPasta)
-  );
+  FAPI.Query(TJSONObject.Create.AddPair('id', ID));
 
   FAPI.DELETE;
 
@@ -237,7 +214,7 @@ end;
 
 function TPipa.Icone(Item: TItem): String;
 begin
-  if ((Item.Tipo = TTipoItem.Pasta) and FIcons.TryGetValue('', Result)) or FIcons.TryGetValue(ExtractFileExt(Item.Nome), Result) then
+  if FIcons.TryGetValue(Item.extensao, Result) then
     Exit;
 
   FAPI.Headers.Clear;
@@ -249,9 +226,8 @@ begin
 
   FAPI.Query(
     TJSONObject.Create
-      .AddPair('separador', TPath.DirectorySeparatorChar)
-      .AddPair('pasta', Item.Pasta.ToString)
-      .AddPair('nome', Item.Nome)
+      .AddPair('extensao', Item.nome)
+      .AddPair('extensao', Item.extensao)
   );
 
   FAPI.GET;
@@ -261,10 +237,7 @@ begin
 
   Result := FAPI.Response.ToStream.DataString;
 
-  if Item.Tipo = TTipoItem.Pasta then
-    FIcons.Add('', Result)
-  else
-    FIcons.Add(ExtractFileExt(Item.Nome), Result);
+  FIcons.Add(Item.extensao, Result);
 end;
 
 function TPipa.Miniatura(Item: TItem): TBytes;
@@ -278,15 +251,14 @@ begin
   sRaiz := TPath.Combine(TPath.GetCachePath, 'pipa');
   if not TDirectory.Exists(sRaiz) then
     TDirectory.CreateDirectory(sRaiz);
-  sRaiz := TPath.Combine(sRaiz, Item.Pasta.ToString);
-  sArquivo := TPath.Combine(sRaiz, Item.Nome);
+  sArquivo := TPath.Combine(sRaiz, Item.id.ToString +'.'+ Item.extensao);
 
   if not TFile.Exists(sArquivo) then
   begin  
     TMonitor.Enter(ListaPendenteDownload);
     try
       for I := 0 to Pred(ListaPendenteDownload.Count) do
-        if (ListaPendenteDownload[I].Tipo = Item.Tipo) and (ListaPendenteDownload[I].Pasta.ToString = Item.Pasta.ToString) and (ListaPendenteDownload[I].Nome = Item.Nome) then
+        if ListaPendenteDownload[I].ID = Item.ID then
           Exit;
       
       ListaPendenteDownload.Add(Item);
@@ -298,6 +270,18 @@ begin
   end;
 
   Result := TFile.ReadAllBytes(sArquivo);
+end;
+
+procedure TPipa.Atualizar;
+begin
+  FAPI.Headers.Clear;
+  FAPI.Query.Clear;
+  FAPI.Body.Clear;
+  FAPI.Params.Clear;
+  FAPI.Route('atualizar');
+  FAPI.GET;
+  if FAPI.Response.Status <> TResponseStatus.Sucess then
+    raise Exception.Create(FAPI.Response.ToString);
 end;
 
 end.

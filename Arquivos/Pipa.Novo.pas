@@ -49,7 +49,7 @@ implementation
 procedure TNovo.lytAdicionarArquivoClick(Sender: TObject);
 begin
   try
-  Arquivo;
+    Arquivo;
   finally
     Free;
   end;     
@@ -70,3 +70,4 @@ begin
 end;
 
 end.
+

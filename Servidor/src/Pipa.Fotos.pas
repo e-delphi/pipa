@@ -187,6 +187,7 @@ begin
   Inst := TPool.Instance;
   Inst.Connection.StartTransaction;
   try
+    // remove arquivos do banco que não existem no disco
     Inst.Query.Open(
       sl +'with recursive pasta_cte as '+
       sl +'( '+
@@ -219,26 +220,86 @@ begin
     while not Inst.Query.Eof do
     begin
       if not TFile.Exists(TPath.Combine(RAIZ, Inst.Query.FieldByName('arquivo').AsString)) then
+      try
         Inst.Connection.ExecSQL(
           sl +'delete '+
           sl +'  from miniatura '+
-          sl +' where id in ( select m.id '+
-          sl +'                 from miniatura as m '+
-          sl +'                inner '+
-          sl +'                 join foto as f '+
-          sl +'                   on f.id = m.id '+
-          sl +'                where f.arquivo_id = '+ Inst.Query.FieldByName('id').AsString +
-          sl +'             ); '+
-          sl +
+          sl +' where foto_id in ( select f.id '+
+          sl +'                      from foto as f '+
+          sl +'                     where f.arquivo_id = '+ Inst.Query.FieldByName('id').AsString +
+          sl +'                  ); '
+        );
+
+        Inst.Connection.ExecSQL(
           sl +'delete '+
           sl +'  from foto '+
-          sl +' where arquivo_id = '+ Inst.Query.FieldByName('id').AsString +
-          sl +
+          sl +' where arquivo_id = '+ Inst.Query.FieldByName('id').AsString +';'
+        );
+
+        Inst.Connection.ExecSQL(
           sl +'delete '+
           sl +'  from arquivo '+
+          sl +' where id = '+ Inst.Query.FieldByName('id').AsString +';'
+        );
+      except on E: Exception do
+        raise Exception.Create('Arquivo: '+ Inst.Query.FieldByName('id').AsString + sl + E.Message);
+      end;
+      Inst.Query.Next;
+    end;
+
+    // remove pastas do banco que não existem mais no disco
+    Inst.Query.Open(
+      sl +'with recursive pasta_cte as '+
+      sl +'( '+
+      sl +'    select id '+
+      sl +'         , pasta_id '+
+      sl +'         , nome '+
+      sl +'         , nome as caminho '+
+      sl +'      from pasta '+
+      sl +'     where pasta_id is null '+
+      sl +'     union all '+
+      sl +'    select p.id '+
+      sl +'         , p.pasta_id '+
+      sl +'         , p.nome '+
+      sl +'         , pc.caminho || ''\'' || p.nome as caminho '+
+      sl +'      from pasta p '+
+      sl +'      join pasta_cte pc '+
+      sl +'        on pc.id = p.pasta_id '+
+      sl +') '+
+      sl +'select id '+
+      sl +'     , caminho '+
+      sl +'  from pasta_cte as pc '+
+      sl +' order '+
+      sl +'    by length(caminho) desc '
+    );
+    Inst.Query.First;
+    while not Inst.Query.Eof do
+    begin
+      if not TDirectory.Exists(TPath.Combine(RAIZ, Inst.Query.FieldByName('caminho').AsString)) then
+        Inst.Connection.ExecSQL(
+          sl +'delete '+
+          sl +'  from pasta '+
           sl +' where id = '+ Inst.Query.FieldByName('id').AsString
         );
       Inst.Query.Next;
+    end;
+
+    // se não tem nunhum arquivo nem nenhuma pasta, redefine os id's
+    if Inst.Connection.ExecSQLScalar(
+      sl +'select count(a.id) + count(p.id) as quantidade '+
+      sl +'  from arquivo as a '+
+      sl +'     , pasta as p ') = 0 then
+    begin
+      Inst.Connection.ExecSQL(
+        sl +'delete from miniatura; '+
+        sl +'delete from foto; '+
+        sl +'delete from arquivo; '+
+        sl +'delete from pasta; '+
+        sl +'delete from sqlite_sequence where name = ''miniatura''; '+
+        sl +'delete from sqlite_sequence where name = ''foto''; '+
+        sl +'delete from sqlite_sequence where name = ''arquivo''; '+
+        sl +'delete from sqlite_sequence where name = ''pasta''; '
+      );
     end;
 
     CoInitialize(nil);
@@ -247,17 +308,6 @@ begin
     finally
       CoUninitialize;
     end;
-
-//    Inst.Connection.ExecSQL(
-//      sl +'delete from miniatura; '+
-//      sl +'delete from foto; '+
-//      sl +'delete from arquivo; '+
-//      sl +'delete from pasta; '+
-//      sl +'delete from sqlite_sequence where name = ''miniatura''; '+
-//      sl +'delete from sqlite_sequence where name = ''foto''; '+
-//      sl +'delete from sqlite_sequence where name = ''arquivo''; '+
-//      sl +'delete from sqlite_sequence where name = ''pasta''; '
-//    );
 
     Inst.Connection.Commit;
   except
@@ -303,11 +353,11 @@ var
 begin
   Result := '';
   for I := 1 to Length(Value) do
-    if TCharacter.IsLetterOrDigit(Value[I]) or
-       TCharacter.IsWhiteSpace(Value[I]) or
-       TCharacter.IsPunctuation(Value[I]) or 
-       TCharacter.IsSeparator(Value[I]) or 
-       TCharacter.IsWhiteSpace(Value[I]) then
+    if Value[I].IsLetterOrDigit or
+       Value[I].IsWhiteSpace or
+       Value[I].IsPunctuation or
+       Value[I].IsSeparator or
+       Value[I].IsWhiteSpace then
       Result := Result + Value[I]
     else
       Result := Result + ' ';
@@ -446,7 +496,7 @@ begin
     sl +'  left '+
     sl +'  join foto as f '+
     sl +'    on f.arquivo_id = a.id '+
-    sl +' where lower(a.extensao) = ''jpg'' '+
+    sl +' where lower(a.extensao) in (''jpg'', ''bmp'', ''png'') '+
     sl +'   and f.id is null '
   );
   CoInitialize(nil);

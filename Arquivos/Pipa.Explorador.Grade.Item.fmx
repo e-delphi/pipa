@@ -34,6 +34,7 @@ object ItemLista: TItemLista
     end
   end
   object clSelecao: TCircle
+    OnTap = clSelecaoTap
     Fill.Color = xFFB0B0B0
     Opacity = 0.500000000000000000
     Position.X = 71.000000000000000000

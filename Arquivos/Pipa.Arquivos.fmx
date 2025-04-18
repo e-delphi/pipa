@@ -95,6 +95,7 @@ object Arquivos: TArquivos
         Size.Width = 235.000000000000000000
         Size.Height = 28.000000000000000000
         Size.PlatformDefault = False
+        TextSettings.Font.Family = 'Lato'
         TextSettings.FontColor = claDimgray
         TextSettings.WordWrap = False
         TextSettings.HorzAlign = Leading
@@ -190,8 +191,49 @@ object Arquivos: TArquivos
       end
     end
   end
-  object odDialog: TOpenDialog
-    Left = 32
-    Top = 62
+  object mvOpcoes: TMultiView
+    NavigationPaneOptions.CollapsedWidth = 0.000000000000000000
+    Size.Width = 250.000000000000000000
+    Size.Height = 50.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 0
+    object rtgAtualizar: TRectangle
+      Align = Top
+      Cursor = crHandPoint
+      Fill.Color = claNull
+      Margins.Left = 3.000000000000000000
+      Margins.Top = 3.000000000000000000
+      Margins.Right = 3.000000000000000000
+      Margins.Bottom = 3.000000000000000000
+      Position.X = 3.000000000000000000
+      Position.Y = 3.000000000000000000
+      Size.Width = 49.000000000000000000
+      Size.Height = 38.000000000000000000
+      Size.PlatformDefault = False
+      Stroke.Kind = None
+      XRadius = 10.000000000000000000
+      YRadius = 10.000000000000000000
+      OnClick = rtgAtualizarClick
+      object txtAtualizar: TText
+        Align = Center
+        HitTest = False
+        Size.Width = 60.000000000000000000
+        Size.Height = 20.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Atualizar'
+        TextSettings.Font.Size = 14.000000000000000000
+        TextSettings.FontColor = claDodgerblue
+      end
+      object canAtualizar: TColorAnimation
+        AnimationType = InOut
+        Duration = 0.000000000000000000
+        Interpolation = Cubic
+        PropertyName = 'Fill.Color'
+        StartValue = claNull
+        StopValue = x0F1E90FF
+        Trigger = 'IsMouseOver=true'
+        TriggerInverse = 'IsMouseOver=false'
+      end
+    end
   end
 end

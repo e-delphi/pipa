@@ -17,10 +17,11 @@ uses
   FMX.StdCtrls,
   FMX.Objects,
   FMX.Layouts,
+  FMX.Gestures,
   Pipa.Tipos,
   Pipa.API,
   Pipa.LotScroll,
-  Pipa.Explorador.Grade.Item, FMX.Gestures;
+  Pipa.Explorador.Grade.Item;
 
 type
   TExploradorGrade = class(TFrame)
@@ -45,6 +46,7 @@ implementation
 
 uses
 //  Androidapi.Log,
+  System.StrUtils,
   System.Math;
 
 const
@@ -54,32 +56,27 @@ const
 
 procedure TExploradorGrade.FillPage(PageIndex: Integer; Page: TLayout);
 var
-  lytFlow: TLayout;
   iInicio: Integer;
   I: Integer;
   Miniatura: TFunc<TItem, TBytes>;
 begin
-  lytFlow := TLayout.Create(Page);
-  lytFlow.Align := TAlignLayout.Client;
-  lytFlow.Height := TAMANHO;
-  lytFlow.Parent := Page;
-
   iInicio := PageIndex * FItensPorLinha;
 
   for I := iInicio to Min(Pred(iInicio + (FItensPorLinha)), Pred(Length(FItens))) do
   begin
-    if (FItens[I].Tipo = Arquivo) and ExtractFileExt(FItens[I].Nome).Replace('.', '').ToLower.Equals('jpg') then
+    if (FItens[I].Tipo = Arquivo) and MatchStr(FItens[I].extensao.ToLower, ['jpg', 'bmp', 'png']) then
       Miniatura := FMiniatura
     else
       Miniatura := nil;
 
-    TItemLista.New(lytFlow, FItens[I], FPipa.Icone(FItens[I]), Miniatura, FItemListaClick, FItemListaSelecionar);
+    TItemLista.New(Page, TAMANHO, FItens[I], FPipa.Icone(FItens[I]), Miniatura, FItemListaClick, FItemListaSelecionar);
   end;
 end;
 
 procedure TExploradorGrade.Criar;
 var
   iItensPorLinha: Integer;
+  iScroll: Single;
 begin
   iItensPorLinha := Floor(Self.Width / TAMANHO);
 
@@ -92,14 +89,20 @@ begin
     Exit;
 
   FItensPorLinha := iItensPorLinha;
+  iScroll := 0;
 
   if Assigned(FLots) then
+  begin
+    iScroll := FLots.ScrollPosition;
     FLots.Free;
+  end;
 
   FLots := TLotScroll.Create(Self, Ceil(Length(FItens) / FItensPorLinha), TAMANHO);
   FLots.Parent := Self;
   FLots.Align := TAlignLayout.Client;
   FLots.OnFillPage := FillPage;
+
+  FLots.ScrollPosition := iScroll;
 end;
 
 procedure TExploradorGrade.Exibir(Pipa: TPipa; Itens: TItens; Miniatura: TFunc<TItem, TBytes>; const ItemListaClick: TProc<TItem>; const ItemListaSelecionar: TProc<TAcaoItemLista, TItem>);

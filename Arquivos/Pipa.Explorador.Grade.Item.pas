@@ -40,6 +40,7 @@ type
     procedure clSelecaoClick(Sender: TObject);
     procedure tmrMiniaturaTimer(Sender: TObject);
     procedure rtgItemTap(Sender: TObject; const Point: TPointF);
+    procedure clSelecaoTap(Sender: TObject; const Point: TPointF);
   private
     FImage: TControl;
     FClick: TProc<TItem>;
@@ -48,7 +49,7 @@ type
     FMiniatura: TFunc<TItem, TBytes>;
     procedure ExibirMiniatura(Dados: TBytes);
   public
-    class function New(const AOwner: TComponent; const Atual: TItem; const Icone: String; const Miniatura: TFunc<TItem, TBytes>; const Click: TProc<TItem>; const Selecionar: TProc<TAcaoItemLista, TItem>): TItemLista;
+    class function New(const AOwner: TComponent; Largura: Integer; const Atual: TItem; const Icone: String; const Miniatura: TFunc<TItem, TBytes>; const Click: TProc<TItem>; const Selecionar: TProc<TAcaoItemLista, TItem>): TItemLista;
     destructor Destroy; override;
   end;
 
@@ -69,12 +70,13 @@ uses
 var
   FCompCount: Integer;
 
-class function TItemLista.New(const AOwner: TComponent; const Atual: TItem; const Icone: String; const Miniatura: TFunc<TItem, TBytes>; const Click: TProc<TItem>; const Selecionar: TProc<TAcaoItemLista, TItem>): TItemLista;
+class function TItemLista.New(const AOwner: TComponent; Largura: Integer; const Atual: TItem; const Icone: String; const Miniatura: TFunc<TItem, TBytes>; const Click: TProc<TItem>; const Selecionar: TProc<TAcaoItemLista, TItem>): TItemLista;
 begin
   AtomicIncrement(FCompCount);
 
   Result := TItemLista.Create(AOwner);
   Result.Name := TItemLista.ClassName + FCompCount.ToString;
+  Result.Width := Largura;
   Result.FAtual := Atual;
   Result.FClick := Click;
   Result.FSelecionar := Selecionar;
@@ -104,7 +106,7 @@ begin
   Result.Position.X := Pred(AOwner.ComponentCount) * 100;
 end;
 
-procedure TItemLista.clSelecaoClick(Sender: TObject);
+procedure TItemLista.clSelecaoTap(Sender: TObject; const Point: TPointF);
 begin
   clSelecao.Visible := False;
   FSelecionar(TAcaoItemLista.Desmarcar, FAtual);
@@ -112,46 +114,53 @@ end;
 
 procedure TItemLista.rtgItemTap(Sender: TObject; const Point: TPointF);
 begin
-  {$IFDEF ANDROID}
-  FClick(FAtual);
-  {$ENDIF}
+  if clSelecao.Visible then
+    clSelecaoTap(clSelecao, TPoint.Create(Round(0), Round(0)))
+  else
+    FClick(FAtual);
 end;
 
 procedure TItemLista.rtgItemGesture(Sender: TObject; const EventInfo: TGestureEventInfo; var Handled: Boolean);
 begin
   if EventInfo.GestureID = igiLongTap then
   begin
-    clSelecao.Visible := True;
-    FSelecionar(TAcaoItemLista.Marcar, FAtual);
+    clSelecao.Visible := not clSelecao.Visible;
+    if clSelecao.Visible then
+      FSelecionar(TAcaoItemLista.Marcar, FAtual)
+    else
+      FSelecionar(TAcaoItemLista.Desmarcar, FAtual);
+
     Handled := True;
   end;
 end;
 
-procedure TItemLista.rtgItemMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Single);
+procedure TItemLista.clSelecaoClick(Sender: TObject);
 begin
+  clSelecaoTap(clSelecao, TPoint.Create(Round(0), Round(0)));
+end;
+
+procedure TItemLista.rtgItemMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Single);
+{$IFNDEF ANDROID}
+var
+  EventInfo: TGestureEventInfo;
+  Handled: Boolean;
+{$ENDIF}
+begin
+  {$IFNDEF ANDROID}
   case Button of
     TMouseButton.mbLeft:
     begin
-      if clSelecao.Visible then
-      begin
-        clSelecao.Visible := False;
-        FSelecionar(TAcaoItemLista.Marcar, FAtual);
-      end
-      {$IFDEF MSWINDOWS}
-      else
-        FClick(FAtual);
-      {$ENDIF}
+      rtgItemTap(rtgItem, TPoint.Create(Round(X), Round(Y)));
     end;
     TMouseButton.mbRight:
     begin
-      clSelecao.Visible := not clSelecao.Visible;
-      if clSelecao.Visible then
-        FSelecionar(TAcaoItemLista.Marcar, FAtual)
-      else
-        FSelecionar(TAcaoItemLista.Desmarcar, FAtual)
+      EventInfo := Default(TGestureEventInfo);
+      EventInfo.GestureID := igiLongTap;
+      rtgItemGesture(rtgItem, EventInfo, Handled);
     end;
     TMouseButton.mbMiddle:;
   end;
+  {$ENDIF}
 end;
 
 procedure TItemLista.rtgItemMouseEnter(Sender: TObject);
@@ -206,7 +215,7 @@ begin
   TMonitor.Enter(ListaPendenteDownload);
   try
     for var I := Pred(ListaPendenteDownload.Count) downto 0 do
-      if (ListaPendenteDownload[I].Tipo = FAtual.Tipo) and (ListaPendenteDownload[I].Pasta.ToString = FAtual.Pasta.ToString) and (ListaPendenteDownload[I].Nome = FAtual.Nome) then
+      if ListaPendenteDownload[I].ID = FAtual.ID then
         ListaPendenteDownload.Delete(I);
   finally
     TMonitor.Exit(ListaPendenteDownload);

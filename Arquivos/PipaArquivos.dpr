@@ -7,7 +7,6 @@ uses
   Pipa.Tipos in 'Pipa.Tipos.pas',
   Pipa.API in 'Pipa.API.pas',
   REST.API in 'REST.API.pas',
-  Pipa.Ordenacao in 'Pipa.Ordenacao.pas',
   Pipa.Inicio in 'Pipa.Inicio.pas' {Inicio: TInicio},
   Pipa.Arquivos in 'Pipa.Arquivos.pas' {Arquivos: TFrame},
   Pipa.Explorador.Grade in 'Pipa.Explorador.Grade.pas' {ExploradorGrade: TFrame},
@@ -19,7 +18,9 @@ uses
   Pipa.LotScroll in 'Pipa.LotScroll.pas',
   Pipa.Miniatura in 'Pipa.Miniatura.pas',
   Pipa.Logo in 'Pipa.Logo.pas' {Logo: TFrame},
-  Pipa.Novo in 'Pipa.Novo.pas' {Novo: TFrame};
+  Pipa.Novo in 'Pipa.Novo.pas' {Novo: TFrame},
+  Pipa.Selecao.Arquivo in 'Pipa.Selecao.Arquivo.pas' {SelecaoArquivo: TFrame},
+  Pipa.Constantes in 'Pipa.Constantes.pas';
 
 {$R *.res}
 

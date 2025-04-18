@@ -18,10 +18,8 @@ uses
   System.Threading,
   System.JSON,
   System.IOUtils,
-  REST.API;
-
-const
-  BASEURL = 'http://100.91.113.91:500/';
+  REST.API,
+  Pipa.Constantes;
 
 var
   PararThread: Boolean;
@@ -36,7 +34,7 @@ var
 begin
   IAPI := TRESTAPI.Create;
   try
-    IAPI.Host(BASEURL);
+    IAPI.Host(HOSTAPI);
     IAPI.Route('miniatura');
 
     while not PararThread do
@@ -57,9 +55,7 @@ begin
 
         IAPI.Query(
           TJSONObject.Create
-            .AddPair('separador', TPath.DirectorySeparatorChar)
-            .AddPair('pasta', Item.Pasta.ToString)
-            .AddPair('nome', Item.Nome)
+            .AddPair('id', Item.ID)
         );
 
         IAPI.GET;
@@ -69,30 +65,25 @@ begin
           TMonitor.Enter(ListaPendenteDownload);
           try
             for var I := Pred(ListaPendenteDownload.Count) downto 0 do
-              if (ListaPendenteDownload[I].Tipo = Item.Tipo) and (ListaPendenteDownload[I].Pasta.ToString = Item.Pasta.ToString) and (ListaPendenteDownload[I].Nome = Item.Nome) then
+              if (ListaPendenteDownload[I].Tipo = Item.Tipo) and (ListaPendenteDownload[I].ID = Item.ID) and (ListaPendenteDownload[I].Nome = Item.Nome) then
                 ListaPendenteDownload.Delete(I);
           finally
             TMonitor.Exit(ListaPendenteDownload);
           end;
-
           Continue;
         end;
 
         sRaiz := TPath.Combine(TPath.GetCachePath, 'pipa');
         if not TDirectory.Exists(sRaiz) then
           TDirectory.CreateDirectory(sRaiz);
-        sRaiz := TPath.Combine(sRaiz, Item.Pasta.ToString);
-        if not TDirectory.Exists(sRaiz) then
-          TDirectory.CreateDirectory(sRaiz);
-
-        sArquivo := TPath.Combine(sRaiz, Item.Nome);
+        sArquivo := TPath.Combine(sRaiz, Item.id.ToString +'.'+ Item.extensao);
 
         IAPI.Response.ToStream.SaveToFile(sArquivo);
 
         TMonitor.Enter(ListaPendenteDownload);
         try
           for var I := Pred(ListaPendenteDownload.Count) downto 0 do
-            if (ListaPendenteDownload[I].Tipo = Item.Tipo) and (ListaPendenteDownload[I].Pasta.ToString = Item.Pasta.ToString) and (ListaPendenteDownload[I].Nome = Item.Nome) then
+            if ListaPendenteDownload[I].id = Item.id then
               ListaPendenteDownload.Delete(I);
         finally
           TMonitor.Exit(ListaPendenteDownload);

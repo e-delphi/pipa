@@ -6,8 +6,10 @@ interface
 uses
   System.Types,
   System.Classes,
+  System.Generics.Collections,
   FMX.StdCtrls,
-  FMX.Layouts;
+  FMX.Layouts,
+  FMX.Types;
 
 type
   TFillPage = procedure(PageIndex: Integer; Page: TLayout) of object;
@@ -16,35 +18,59 @@ type
   private
     Box: TVertScrollBox;
     Scroll: TSmallScrollBar;
-    Pages: TArray<TLayout>;
+    FPages: TArray<TLayout>;
+    FTotalPages: Integer;
+    FPageHeight: Integer;
     FillPage: TFillPage;
     FInicio: Boolean;
+    FCurrentPos: Single;
+    FSetPos: Single;
     procedure ScrollChange(Sender: TObject);
     procedure BoxViewportPositionChange(Sender: TObject; const OldViewportPosition, NewViewportPosition: TPointF; const ContentSizeChanged: Boolean);
     procedure UpdatePages(ScrollValue, ViewportSize: Single);
+    function GetScrollPosition: Single;
+    procedure SetScrollPosition(const Value: Single);
   public
     constructor Create(AOwner: TComponent; TotalPages, PageHeight: Integer); reintroduce;
     property OnFillPage: TFillPage read FillPage write FillPage;
+    property ScrollPosition: Single read GetScrollPosition write SetScrollPosition;
     function Visiveis: TArray<TLayout>;
+    function Page(I: Integer): TLayout;
   end;
 
 implementation
 
 uses
-  FMX.Types,
   FMX.Controls;
 
 { TLotScroll }
 
+function TLotScroll.Page(I: Integer): TLayout;
+begin
+  if I >= Length(FPages) then
+  begin
+    Result := TLayout.Create(Box);
+    Result.Tag := I;
+    Result.Align := TAlignLayout.None;
+    Result.Height := FPageHeight;
+    FPages := FPages + [Result];
+    Result.Parent := Box;
+    Result.Position.Y := FCurrentPos;
+    FCurrentPos := FCurrentPos + FPageHeight;
+  end
+  else
+    Result := FPages[I];
+end;
+
 constructor TLotScroll.Create(AOwner: TComponent; TotalPages, PageHeight: Integer);
-var
-  I: Integer;
-  Page: TLayout;
-  CurrentPos: Single;
 begin
   inherited Create(AOwner);
 
   FInicio := True;
+  FTotalPages := TotalPages;
+  FPageHeight := PageHeight;
+  FCurrentPos := 0;
+  FPages := [];
 
   Box := TVertScrollBox.Create(Self);
   Box.Align := TAlignLayout.Client;
@@ -58,24 +84,20 @@ begin
   Scroll.OnChange := ScrollChange;
   Scroll.Parent := Self;
 
-  CurrentPos := 0;
-  Pages := [];
-
-  for I := 0 to Pred(TotalPages) do
-  begin
-    Page := TLayout.Create(Box);
-    Page.Align := TAlignLayout.None;
-    Page.Height := PageHeight;
-    Pages := Pages + [Page];
-    Page.Parent := Box;
-    Page.Position.Y := CurrentPos;
-    CurrentPos := CurrentPos + PageHeight;
-  end;
-
-  Scroll.Max := CurrentPos + PageHeight;
+  Scroll.Max := TotalPages * PageHeight;
   Scroll.ViewportSize := Box.Height;
   Scroll.Value := 0;
   Box.ViewportPosition := TPointF.Create(0, 0);
+end;
+
+function TLotScroll.GetScrollPosition: Single;
+begin
+  Result := Scroll.Value;
+end;
+
+procedure TLotScroll.SetScrollPosition(const Value: Single);
+begin
+  FSetPos := Value;
 end;
 
 procedure TLotScroll.BoxViewportPositionChange(Sender: TObject; const OldViewportPosition, NewViewportPosition: TPointF; const ContentSizeChanged: Boolean);
@@ -85,6 +107,13 @@ begin
   Scroll.Value := NewViewportPosition.Y;
 
   UpdatePages(Scroll.Value, Scroll.ViewportSize);
+
+  if FSetPos > 0 then
+  begin
+    Scroll.Value := FSetPos;
+    if Scroll.Value > 0 then
+      FSetPos := 0;
+  end;
 end;
 
 procedure TLotScroll.ScrollChange(Sender: TObject);
@@ -97,19 +126,19 @@ var
   I, J: Integer;
   Item: TFmxObject;
 begin
-  for I := 0 to Pred(Length(Pages)) do
+  for I := 0 to Pred(FTotalPages) do
   begin
-    if (ScrollValue < Pages[I].Position.Y + Pages[I].Size.Height) and (ScrollValue + ViewportSize > Pages[I].Position.Y) then
+    if (ScrollValue < Page(I).Position.Y + Page(I).Size.Height) and (ScrollValue + ViewportSize > Page(I).Position.Y) then
     begin
-      if Pages[I].ComponentCount = 0 then
-        FillPage(I, Pages[I]);
+      if Page(I).ComponentCount = 0 then
+        FillPage(I, Page(I));
     end
     else
     begin
-      for J := Pred(Pages[I].ComponentCount) downto 0 do
+      for J := Pred(Page(I).ComponentCount) downto 0 do
       begin
-        Item := Pages[I].Components[J] as TFmxObject;
-        Pages[I].RemoveObject(Item);
+        Item := Page(I).Components[J] as TFmxObject;
+        Page(I).RemoveObject(Item);
         Item.Free;
       end;
     end;
@@ -121,9 +150,9 @@ var
   I: Integer;
 begin
   Result := [];
-  for I := 0 to Pred(Length(Pages)) do
-    if Pages[I].ComponentCount > 0 then
-      Result := Result + [Pages[I]];
+  for I := 0 to Pred(FTotalPages) do
+    if Page(I).ComponentCount > 0 then
+      Result := Result + [Page(I)];
 end;
 
 end.
